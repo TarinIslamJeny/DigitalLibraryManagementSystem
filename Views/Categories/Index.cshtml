@@ -1,0 +1,32 @@
+@model IEnumerable<DigitalLibraryManagementSystem.Models.Category>
+@{
+    ViewData["Title"] = "Categories";
+}
+
+<div class="page-shell">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 class="section-title mb-0">Categories</h2>
+        @if (User.IsInRole("Admin") || User.IsInRole("Librarian"))
+        {
+            <a asp-action="Create" class="btn btn-primary">Add Category</a>
+        }
+    </div>
+
+    <div class="row g-4">
+        @if (!Model.Any())
+        {
+            <div class="col-12"><div class="empty-state">No categories have been added yet.</div></div>
+        }
+        @foreach (var category in Model)
+        {
+            <div class="col-md-6 col-lg-4">
+                <a asp-controller="Books" asp-action="Index" asp-route-CategoryId="@category.CategoryId" class="text-decoration-none text-dark d-block h-100">
+                    <div class="card h-100 p-3">
+                        <h5 class="fw-bold">@category.Name</h5>
+                        <p class="text-muted mb-0">@category.Description</p>
+                    </div>
+                </a>
+            </div>
+        }
+    </div>
+</div>

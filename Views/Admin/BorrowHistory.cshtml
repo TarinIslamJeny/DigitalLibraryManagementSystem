@@ -1,0 +1,41 @@
+@model IEnumerable<DigitalLibraryManagementSystem.Models.BorrowRecord>
+@inject DigitalLibraryManagementSystem.Services.FileStorageService FileStorage
+@{
+    ViewData["Title"] = "Borrow History";
+}
+
+<div class="page-shell">
+    <h2 class="section-title">Borrow History: @ViewBag.UserName</h2>
+    @if (!Model.Any())
+    {
+        <div class="empty-state">No borrowing history found.</div>
+    }
+    else
+    {
+        <div class="table-responsive">
+            <table class="table table-striped align-middle">
+                <thead><tr><th>Book</th><th>Borrowed</th><th>Due</th><th>Returned</th><th>Status</th><th>Fine</th></tr></thead>
+                <tbody>
+                    @foreach (var record in Model)
+                    {
+                        <tr>
+                            <td>
+                                @if (record.Book != null)
+                                {
+                                    <a asp-controller="Books" asp-action="Details" asp-route-id="@record.BookId" class="book-table-link">
+                                        <img src="@FileStorage.GetCoverImagePath(record.Book.CoverImagePath)" alt="@record.Book.Title cover" class="table-book-cover" />
+                                        <span>@record.Book.Title</span>
+                                    </a>
+                                }
+                            </td>
+                            <td>@record.BorrowDate.ToShortDateString()</td><td>@record.DueDate.ToShortDateString()</td>
+                            <td>@(record.ReturnDate?.ToShortDateString() ?? "-")</td>
+                            <td><span class="badge @(record.Status == DigitalLibraryManagementSystem.Models.BorrowStatus.Returned ? "text-bg-success" : record.Status == DigitalLibraryManagementSystem.Models.BorrowStatus.Overdue ? "text-bg-danger" : "text-bg-primary")">@record.Status</span></td>
+                            <td>@record.FineAmount.ToString("C")</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    }
+</div>

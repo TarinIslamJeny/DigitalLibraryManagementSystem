@@ -1,0 +1,13 @@
+﻿@model DigitalLibraryManagementSystem.Models.ErrorViewModel
+@{
+    ViewData["Title"] = "Error";
+}
+
+<div class="page-shell text-center py-5">
+    <h1 class="display-4 text-danger">Something went wrong.</h1>
+    @if (Model.ShowRequestId)
+    {
+        <p><strong>Request ID:</strong> @Model.RequestId</p>
+    }
+    <a asp-controller="Home" asp-action="Index" class="btn btn-primary">Return to Home</a>
+</div>

@@ -1,0 +1,38 @@
+@model IEnumerable<DigitalLibraryManagementSystem.Models.ApplicationUser>
+@{
+    ViewData["Title"] = "Members";
+}
+
+<div class="page-shell">
+    <h2 class="section-title">Members</h2>
+    @if (!Model.Any())
+    {
+        <div class="empty-state">No members have registered yet.</div>
+    }
+    else
+    {
+        <div class="table-responsive">
+            <table class="table table-striped align-middle">
+                <thead><tr><th>Name</th><th>Email</th><th>Joined</th><th>Status</th><th>Actions</th></tr></thead>
+                <tbody>
+                    @foreach (var member in Model)
+                    {
+                        <tr>
+                            <td>@member.FullName</td><td>@member.Email</td><td>@member.RegistrationDate.ToShortDateString()</td>
+                            <td><span class="badge @(member.IsActive ? "text-bg-success" : "text-bg-secondary")">@(member.IsActive ? "Active" : "Inactive")</span></td>
+                            <td class="text-nowrap">
+                                <a asp-action="ViewMember" asp-route-id="@member.Id" class="btn btn-sm btn-outline-primary">View</a>
+                                <a asp-action="BorrowHistory" asp-route-userId="@member.Id" class="btn btn-sm btn-outline-secondary">History</a>
+                                <form asp-action="ToggleUserStatus" method="post" class="d-inline">
+                                    @Html.AntiForgeryToken()
+                                    <input type="hidden" name="userId" value="@member.Id" />
+                                    <button type="submit" class="btn btn-sm btn-outline-warning">@(member.IsActive ? "Deactivate" : "Activate")</button>
+                                </form>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    }
+</div>

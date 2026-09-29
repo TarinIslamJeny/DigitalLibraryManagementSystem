@@ -1,0 +1,121 @@
+﻿@model DigitalLibraryManagementSystem.ViewModels.DashboardViewModel
+@inject DigitalLibraryManagementSystem.Services.FileStorageService FileStorage
+@{
+    ViewData["Title"] = "Home";
+    var latestBooks = ViewBag.LatestBooks as IEnumerable<DigitalLibraryManagementSystem.Models.Book> ?? new List<DigitalLibraryManagementSystem.Models.Book>();
+    var popularBooks = ViewBag.PopularBooks as IEnumerable<DigitalLibraryManagementSystem.Models.Book> ?? new List<DigitalLibraryManagementSystem.Models.Book>();
+    var digitalBooks = ViewBag.DigitalBooks as IEnumerable<DigitalLibraryManagementSystem.Models.Book> ?? new List<DigitalLibraryManagementSystem.Models.Book>();
+    var categories = ViewBag.Categories as IEnumerable<DigitalLibraryManagementSystem.Models.Category> ?? new List<DigitalLibraryManagementSystem.Models.Category>();
+}
+
+<section class="hero-section mb-5">
+    <div class="container">
+        <div class="row align-items-center g-4">
+            <div class="col-lg-7">
+                <span class="badge bg-light text-dark mb-3">University Digital Library</span>
+                <h1 class="display-5 fw-bold mb-3">Discover knowledge, borrow books, and access digital learning resources.</h1>
+                <p class="lead text-white-50 mb-4">
+                    Explore thousands of books, reserve unavailable titles, and read digital content anytime from your campus or home.
+                </p>
+                <form asp-controller="Books" asp-action="Index" method="get" class="d-flex gap-2 flex-wrap">
+                    <input name="SearchTerm" type="text" class="form-control hero-search" placeholder="Search books, ISBN, authors, or categories" />
+                    <button type="submit" class="btn btn-primary px-4">Search</button>
+                </form>
+            </div>
+            <div class="col-lg-5 text-center">
+                <div class="card bg-white text-dark p-4 shadow-sm">
+                    <div class="row g-3">
+                        <div class="col-6"><div class="stat-card p-3"><h3 class="fw-bold">@Model.TotalBooks</h3><small>Total Books</small></div></div>
+                        <div class="col-6"><div class="stat-card p-3"><h3 class="fw-bold">@Model.TotalMembers</h3><small>Total Members</small></div></div>
+                        <div class="col-6"><div class="stat-card p-3"><h3 class="fw-bold">@Model.AvailableBooks</h3><small>Available Books</small></div></div>
+                        <div class="col-6"><div class="stat-card p-3"><h3 class="fw-bold">@Model.DigitalBooks</h3><small>Digital Books</small></div></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<div class="container">
+    <div class="mb-5">
+        <h2 class="section-title">Latest Books</h2>
+        <div class="row g-4">
+            @foreach (var book in latestBooks)
+            {
+                <div class="col-md-6 col-lg-4">
+                    <div class="book-card h-100">
+                        <img src="@FileStorage.GetCoverImagePath(book.CoverImagePath)" alt="@book.Title" class="book-cover-image" />
+                        <div class="p-3">
+                            <h5 class="fw-bold">@book.Title</h5>
+                            <p class="text-muted mb-2">@book.Author?.Name</p>
+                            <div class="d-flex justify-content-between mb-2">
+                                <span class="badge bg-light text-dark">@book.Category?.Name</span>
+                                <span class="badge @(book.AvailableCopies > 0 ? "bg-success" : "bg-warning text-dark")">@(book.AvailableCopies > 0 ? "Available" : "Unavailable")</span>
+                            </div>
+                            <a asp-controller="Books" asp-action="Details" asp-route-id="@book.BookId" class="btn btn-outline-primary w-100">Details</a>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    </div>
+
+    <div class="mb-5">
+        <h2 class="section-title">Popular Books</h2>
+        <div class="row g-4">
+            @foreach (var book in popularBooks)
+            {
+                <div class="col-md-6 col-lg-4">
+                    <div class="book-card h-100">
+                        <img src="@FileStorage.GetCoverImagePath(book.CoverImagePath)" alt="@book.Title" class="book-cover-image" />
+                        <div class="p-3">
+                            <h5 class="fw-bold">@book.Title</h5>
+                            <p class="text-muted mb-2">@book.Author?.Name</p>
+                            <div class="d-flex justify-content-between mb-2">
+                                <span class="badge bg-light text-dark">@book.Category?.Name</span>
+                                <span class="badge @(book.AvailableCopies > 0 ? "bg-success" : "bg-warning text-dark")">@(book.AvailableCopies > 0 ? $"{book.AvailableCopies} copies" : "Unavailable")</span>
+                            </div>
+                            <a asp-controller="Books" asp-action="Details" asp-route-id="@book.BookId" class="btn btn-outline-primary w-100">Details</a>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    </div>
+
+    <div class="mb-5">
+        <h2 class="section-title">Available Digital Books</h2>
+        <div class="row g-4">
+            @foreach (var book in digitalBooks)
+            {
+                <div class="col-md-4">
+                    <div class="book-card h-100 p-3">
+                        <h5 class="fw-bold">@book.Title</h5>
+                        <p class="mb-2 text-muted">@book.Author?.Name</p>
+                        <div class="d-flex justify-content-between align-items-center">
+                            <span class="badge bg-info text-dark">Digital Copy</span>
+                            <a asp-controller="Books" asp-action="Details" asp-route-id="@book.BookId" class="btn btn-sm btn-primary">Read</a>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    </div>
+
+    <div class="mb-5">
+        <h2 class="section-title">Browse by Category</h2>
+        <div class="row g-3">
+            @foreach (var category in categories)
+            {
+                <div class="col-md-3">
+                    <a asp-controller="Books" asp-action="Index" asp-route-CategoryId="@category.CategoryId" class="text-decoration-none text-dark d-block h-100">
+                        <div class="dashboard-card text-center h-100">
+                            <div class="icon-box mx-auto mb-2">📚</div>
+                            <h6 class="fw-bold mb-0">@category.Name</h6>
+                        </div>
+                    </a>
+                </div>
+            }
+        </div>
+    </div>
+</div>

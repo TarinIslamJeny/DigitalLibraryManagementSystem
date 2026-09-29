@@ -1,0 +1,116 @@
+﻿@{
+    var activeController = ViewContext.RouteData.Values["controller"]?.ToString();
+    var activeAction = ViewContext.RouteData.Values["action"]?.ToString();
+    string ActiveLink(string controller, string? action = null) =>
+        activeController == controller && (action == null || activeAction == action) ? "active" : string.Empty;
+}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - DigitalLibraryManagementSystem</title>
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" />
+</head>
+<body>
+    <header>
+        <nav class="navbar navbar-expand-lg navbar-dark shadow-sm">
+            <div class="container">
+                <a class="navbar-brand fw-bold" asp-controller="Home" asp-action="Index"><i class="bi bi-book-half me-2" aria-hidden="true"></i>Digital Library</a>
+                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#mainNav" aria-controls="mainNav" aria-expanded="false" aria-label="Toggle navigation">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+                <div class="collapse navbar-collapse" id="mainNav">
+                    <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+                        <li class="nav-item"><a class="nav-link @ActiveLink("Home", "Index")" asp-controller="Home" asp-action="Index">Home</a></li>
+                        <li class="nav-item"><a class="nav-link @ActiveLink("Books")" asp-controller="Books" asp-action="Index">Books</a></li>
+                        <li class="nav-item"><a class="nav-link @ActiveLink("Categories")" asp-controller="Categories" asp-action="Index">Categories</a></li>
+                        <li class="nav-item"><a class="nav-link @ActiveLink("Authors")" asp-controller="Authors" asp-action="Index">Authors</a></li>
+                        <li class="nav-item"><a class="nav-link @ActiveLink("Home", "About")" asp-controller="Home" asp-action="About">About</a></li>
+                    </ul>
+                    <ul class="navbar-nav ms-auto align-items-lg-center">
+                        @if (User.Identity != null && User.Identity.IsAuthenticated)
+                        {
+                            <li class="nav-item"><a class="nav-link @ActiveLink("Account", "Dashboard")" asp-controller="Account" asp-action="Dashboard">Dashboard</a></li>
+                            <li class="nav-item"><a class="nav-link @ActiveLink("Profile")" asp-controller="Profile" asp-action="Index">My Books / Profile</a></li>
+                            <li class="nav-item"><a class="nav-link @ActiveLink("Notifications")" asp-controller="Notifications" asp-action="Index">Notifications</a></li>
+                            @if (User.IsInRole("Admin"))
+                            {
+                                <li class="nav-item"><a class="nav-link @ActiveLink("Admin")" asp-controller="Admin" asp-action="Dashboard">Admin</a></li>
+                                <li class="nav-item"><a class="nav-link @ActiveLink("Reports")" asp-controller="Reports" asp-action="Index">Reports</a></li>
+                            }
+                            @if (User.IsInRole("Librarian"))
+                            {
+                                <li class="nav-item"><a class="nav-link @ActiveLink("Librarian")" asp-controller="Librarian" asp-action="Dashboard">Librarian</a></li>
+                                <li class="nav-item"><a class="nav-link @ActiveLink("Librarian", "SearchBooks")" asp-controller="Librarian" asp-action="SearchBooks">Manage Books</a></li>
+                            }
+                            <li class="nav-item">
+                                <form asp-controller="Account" asp-action="Logout" method="post" class="d-inline">
+                                    @Html.AntiForgeryToken()
+                                    <button type="submit" class="btn btn-outline-light btn-sm ms-2">Logout</button>
+                                </form>
+                            </li>
+                        }
+                        else
+                        {
+                            <li class="nav-item"><a class="nav-link" asp-controller="Account" asp-action="Login">Login</a></li>
+                            <li class="nav-item"><a class="nav-link" asp-controller="Account" asp-action="Register">Register</a></li>
+                        }
+                    </ul>
+                </div>
+            </div>
+        </nav>
+    </header>
+
+    <main class="container py-4 app-shell">
+        @if (TempData["SuccessMessage"] != null)
+        {
+            <div class="alert alert-success alert-dismissible fade show" role="alert">
+                @TempData["SuccessMessage"]
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        }
+
+        @if (TempData["ErrorMessage"] != null)
+        {
+            <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                @TempData["ErrorMessage"]
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        }
+
+        @RenderBody()
+    </main>
+
+    <footer class="footer mt-5">
+        <div class="container">
+            <div class="row g-4">
+                <div class="col-md-4">
+                    <h5>Digital Library</h5>
+                    <p class="mb-0 text-white-50">Smart reading and academic collaboration for every learner.</p>
+                </div>
+                <div class="col-md-4">
+                    <h6>Quick Links</h6>
+                    <ul class="list-unstyled">
+                        <li><a href="@Url.Action("Index", "Books")" class="text-white-50 text-decoration-none">Books</a></li>
+                        <li><a href="@Url.Action("Index", "Categories")" class="text-white-50 text-decoration-none">Categories</a></li>
+                        <li><a href="@Url.Action("Index", "Authors")" class="text-white-50 text-decoration-none">Authors</a></li>
+                    </ul>
+                </div>
+                <div class="col-md-4">
+                    <h6>Contact</h6>
+                    <p class="mb-1 text-white-50">support@digitallibrary.edu</p>
+                    <p class="mb-0 text-white-50">+880 1234 567890</p>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <script src="~/lib/jquery/dist/jquery.min.js"></script>
+    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="~/js/site.js" asp-append-version="true"></script>
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>

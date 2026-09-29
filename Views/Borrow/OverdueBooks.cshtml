@@ -1,0 +1,40 @@
+@model IEnumerable<DigitalLibraryManagementSystem.Models.BorrowRecord>
+@inject DigitalLibraryManagementSystem.Services.FileStorageService FileStorage
+@{
+    ViewData["Title"] = "Overdue Books";
+}
+
+<div class="page-shell">
+    <h2 class="section-title">Overdue Books</h2>
+    @if (!Model.Any())
+    {
+        <div class="empty-state">No overdue books found.</div>
+    }
+    else
+    {
+        <div class="table-responsive">
+            <table class="table table-striped align-middle">
+                <thead><tr><th>Book</th><th>Member</th><th>Due Date</th><th>Days Overdue</th><th>Status</th></tr></thead>
+                <tbody>
+                    @foreach (var record in Model)
+                    {
+                        <tr>
+                            <td>
+                                @if (record.Book != null)
+                                {
+                                    <a asp-controller="Books" asp-action="Details" asp-route-id="@record.BookId" class="book-table-link">
+                                        <img src="@FileStorage.GetCoverImagePath(record.Book.CoverImagePath)" alt="@record.Book.Title cover" class="table-book-cover" />
+                                        <span>@record.Book.Title</span>
+                                    </a>
+                                }
+                            </td>
+                            <td>@record.User?.FullName</td><td>@record.DueDate.ToShortDateString()</td>
+                            <td>@Math.Max(0, (DateTime.UtcNow.Date - record.DueDate.Date).Days)</td>
+                            <td><span class="badge text-bg-danger">@record.Status</span></td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    }
+</div>

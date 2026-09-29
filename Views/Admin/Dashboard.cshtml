@@ -1,0 +1,74 @@
+@model DigitalLibraryManagementSystem.ViewModels.DashboardViewModel
+@{
+    ViewData["Title"] = "Admin Dashboard";
+    var recentBorrowings = ViewBag.RecentBorrowings as IEnumerable<DigitalLibraryManagementSystem.Models.BorrowRecord> ?? new List<DigitalLibraryManagementSystem.Models.BorrowRecord>();
+    var overdueBooks = ViewBag.OverdueBooks as IEnumerable<DigitalLibraryManagementSystem.Models.BorrowRecord> ?? new List<DigitalLibraryManagementSystem.Models.BorrowRecord>();
+    var recentMembers = ViewBag.RecentMembers as IEnumerable<DigitalLibraryManagementSystem.Models.ApplicationUser> ?? new List<DigitalLibraryManagementSystem.Models.ApplicationUser>();
+    var reservations = ViewBag.Reservations as IEnumerable<DigitalLibraryManagementSystem.Models.Reservation> ?? new List<DigitalLibraryManagementSystem.Models.Reservation>();
+}
+
+<div class="page-shell">
+    <h2 class="section-title">Admin Dashboard</h2>
+
+    <div class="row g-4 mb-4">
+        <div class="col-md-3"><div class="dashboard-card"><h6>Total Books</h6><h3>@Model.TotalBooks</h3></div></div>
+        <div class="col-md-3"><div class="dashboard-card"><h6>Available Books</h6><h3>@Model.AvailableBooks</h3></div></div>
+        <div class="col-md-3"><div class="dashboard-card"><h6>Borrowed Books</h6><h3>@Model.BorrowedBooks</h3></div></div>
+        <div class="col-md-3"><div class="dashboard-card"><h6>Total Members</h6><h3>@Model.TotalMembers</h3></div></div>
+        <div class="col-md-3"><div class="dashboard-card"><h6>Librarians</h6><h3>@Model.Librarians</h3></div></div>
+        <div class="col-md-3"><div class="dashboard-card"><h6>Reservations</h6><h3>@Model.Reservations</h3></div></div>
+        <div class="col-md-3"><div class="dashboard-card"><h6>Overdue</h6><h3>@Model.OverdueBooks</h3></div></div>
+        <div class="col-md-3"><div class="dashboard-card"><h6>Unpaid Fines</h6><h3>৳@Model.UnpaidFines</h3></div></div>
+    </div>
+
+    <div class="row g-4">
+        <div class="col-lg-6">
+            <h4>Recent Borrowings</h4>
+            <table class="table table-striped">
+                <thead><tr><th>User</th><th>Book</th><th>Date</th></tr></thead>
+                <tbody>
+                    @foreach (var borrowing in recentBorrowings)
+                    {
+                        <tr><td>@borrowing.User?.FullName</td><td>@borrowing.Book?.Title</td><td>@borrowing.BorrowDate.ToShortDateString()</td></tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+        <div class="col-lg-6">
+            <h4>Overdue Books</h4>
+            <table class="table table-striped">
+                <thead><tr><th>User</th><th>Book</th><th>Due Date</th></tr></thead>
+                <tbody>
+                    @foreach (var overdue in overdueBooks)
+                    {
+                        <tr><td>@overdue.User?.FullName</td><td>@overdue.Book?.Title</td><td>@overdue.DueDate.ToShortDateString()</td></tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+        <div class="col-lg-6">
+            <h4>Recent Members</h4>
+            <table class="table table-striped">
+                <thead><tr><th>Name</th><th>Email</th><th>Joined</th></tr></thead>
+                <tbody>
+                    @foreach (var member in recentMembers)
+                    {
+                        <tr><td>@member.FullName</td><td>@member.Email</td><td>@member.RegistrationDate.ToShortDateString()</td></tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+        <div class="col-lg-6">
+            <h4>Reservations</h4>
+            <table class="table table-striped">
+                <thead><tr><th>User</th><th>Book</th><th>Status</th></tr></thead>
+                <tbody>
+                    @foreach (var reservation in reservations)
+                    {
+                        <tr><td>@reservation.User?.FullName</td><td>@reservation.Book?.Title</td><td>@reservation.Status</td></tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>

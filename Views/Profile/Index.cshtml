@@ -1,0 +1,121 @@
+@model DigitalLibraryManagementSystem.Models.ApplicationUser
+@inject DigitalLibraryManagementSystem.Services.FileStorageService FileStorage
+@{
+    ViewData["Title"] = "Profile";
+    var borrowHistory = ViewBag.BorrowHistory as IEnumerable<DigitalLibraryManagementSystem.Models.BorrowRecord> ?? new List<DigitalLibraryManagementSystem.Models.BorrowRecord>();
+    var activeReservations = ViewBag.ActiveReservations as IEnumerable<DigitalLibraryManagementSystem.Models.Reservation> ?? new List<DigitalLibraryManagementSystem.Models.Reservation>();
+    var notifications = ViewBag.Notifications as IEnumerable<DigitalLibraryManagementSystem.Models.Notification> ?? new List<DigitalLibraryManagementSystem.Models.Notification>();
+    var fines = ViewBag.Fines as IEnumerable<DigitalLibraryManagementSystem.Models.Fine> ?? new List<DigitalLibraryManagementSystem.Models.Fine>();
+}
+
+<div class="page-shell">
+    <h2 class="section-title">My Profile</h2>
+    <div class="card p-4 mb-4">
+        <div class="d-flex justify-content-between align-items-center">
+            <div>
+                <h4 class="fw-bold mb-1">@Model.FullName</h4>
+                <p class="mb-0 text-muted">@Model.Email</p>
+            </div>
+            <a asp-action="Edit" class="btn btn-outline-primary">Edit Profile</a>
+        </div>
+    </div>
+
+    <div class="row g-4 mb-4">
+        <div class="col-md-3"><div class="dashboard-card"><h6>Borrowed</h6><h3>@borrowHistory.Count(br => br.Status == DigitalLibraryManagementSystem.Models.BorrowStatus.Borrowed || br.Status == DigitalLibraryManagementSystem.Models.BorrowStatus.Overdue)</h3></div></div>
+        <div class="col-md-3"><div class="dashboard-card"><h6>Reservations</h6><h3>@activeReservations.Count()</h3></div></div>
+        <div class="col-md-3"><div class="dashboard-card"><h6>Fines</h6><h3>@fines.Sum(f => f.Amount).ToString("C")</h3></div></div>
+        <div class="col-md-3"><div class="dashboard-card"><h6>Notifications</h6><h3>@notifications.Count()</h3></div></div>
+    </div>
+
+    <div class="row g-4">
+        <div class="col-lg-7">
+            <h4>Borrowing History</h4>
+            <div class="table-responsive">
+                <table class="table table-striped">
+                    <thead>
+                        <tr>
+                            <th>Book</th>
+                            <th>Borrow Date</th>
+                            <th>Due Date</th>
+                            <th>Status</th>
+                            <th>Return Status</th>
+                            <th></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var record in borrowHistory)
+                        {
+                            <tr>
+                                <td>
+                                    @if (record.Book != null)
+                                    {
+                                        <a asp-controller="Books" asp-action="Details" asp-route-id="@record.BookId" class="book-table-link">
+                                            <img src="@FileStorage.GetCoverImagePath(record.Book.CoverImagePath)" alt="@record.Book.Title cover" class="table-book-cover" />
+                                            <span>@record.Book.Title</span>
+                                        </a>
+                                    }
+                                </td>
+                                <td>@record.BorrowDate.ToShortDateString()</td>
+                                <td>@record.DueDate.ToShortDateString()</td>
+                                <td>@record.Status</td>
+                                <td>@(record.ReturnDate.HasValue ? "Returned" : "Not Returned")</td>
+                                <td>
+                                    @if (record.Status == DigitalLibraryManagementSystem.Models.BorrowStatus.Borrowed || record.Status == DigitalLibraryManagementSystem.Models.BorrowStatus.Overdue)
+                                    {
+                                        <form asp-controller="Borrow" asp-action="ReturnBook" method="post">
+                                            @Html.AntiForgeryToken()
+                                            <input type="hidden" name="borrowRecordId" value="@record.BorrowRecordId" />
+                                            <button type="submit" class="btn btn-sm btn-outline-success">Return</button>
+                                        </form>
+                                    }
+                                </td>
+                            </tr>
+                        }
+                        @if (!borrowHistory.Any())
+                        {
+                            <tr><td colspan="6"><div class="empty-state">No borrowed books yet.</div></td></tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        <div class="col-lg-5">
+            <h4>Reservations</h4>
+            <ul class="list-group">
+                @foreach (var reservation in activeReservations)
+                {
+                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                        <span class="d-flex align-items-center gap-2">
+                            @if (reservation.Book != null)
+                            {
+                                <img src="@FileStorage.GetCoverImagePath(reservation.Book.CoverImagePath)" alt="@reservation.Book.Title cover" class="table-book-cover" />
+                            }
+                            @reservation.Book?.Title
+                        </span>
+                        <form asp-controller="Reservation" asp-action="CancelReservation" method="post">
+                            @Html.AntiForgeryToken()
+                            <input type="hidden" name="reservationId" value="@reservation.ReservationId" />
+                            <button type="submit" class="btn btn-sm btn-outline-danger">Cancel</button>
+                        </form>
+                    </li>
+                }
+                @if (!activeReservations.Any())
+                {
+                    <li class="list-group-item empty-state">No reservations found.</li>
+                }
+            </ul>
+
+            <h4 class="mt-4">Notifications</h4>
+            <ul class="list-group">
+                @foreach (var notification in notifications)
+                {
+                    <li class="list-group-item">@notification.Message</li>
+                }
+                @if (!notifications.Any())
+                {
+                    <li class="list-group-item empty-state">No notifications.</li>
+                }
+            </ul>
+        </div>
+    </div>
+</div>

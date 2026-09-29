@@ -1,0 +1,99 @@
+@model IEnumerable<DigitalLibraryManagementSystem.Models.Book>
+@inject DigitalLibraryManagementSystem.Services.FileStorageService FileStorage
+@{
+    ViewData["Title"] = "Books";
+    var categories = ViewBag.Categories as IEnumerable<DigitalLibraryManagementSystem.Models.Category> ?? new List<DigitalLibraryManagementSystem.Models.Category>();
+    var authors = ViewBag.Authors as IEnumerable<DigitalLibraryManagementSystem.Models.Author> ?? new List<DigitalLibraryManagementSystem.Models.Author>();
+    var totalPages = ViewBag.TotalPages ?? 1;
+    var pageNumber = ViewBag.PageNumber ?? 1;
+}
+
+<div class="page-shell">
+    <div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-4">
+        <h2 class="section-title mb-0">Book Catalog</h2>
+        @if (User.IsInRole("Admin") || User.IsInRole("Librarian"))
+        {
+            <a asp-controller="Books" asp-action="Create" class="btn btn-primary"><i class="bi bi-plus-lg me-1" aria-hidden="true"></i>Add Book</a>
+        }
+    </div>
+
+    <form asp-action="Index" method="get" class="row g-3 mb-4">
+        <div class="col-md-4">
+            <input type="text" name="SearchTerm" class="form-control" placeholder="Search title, ISBN, author..." value="@Context.Request.Query["SearchTerm"]" />
+        </div>
+        <div class="col-md-2">
+            <select name="CategoryId" class="form-select">
+                <option value="">All Categories</option>
+                @foreach (var category in categories)
+                {
+                    <option value="@category.CategoryId" selected="@(Context.Request.Query["CategoryId"] == category.CategoryId.ToString())">@category.Name</option>
+                }
+            </select>
+        </div>
+        <div class="col-md-2">
+            <select name="AuthorId" class="form-select">
+                <option value="">All Authors</option>
+                @foreach (var author in authors)
+                {
+                    <option value="@author.AuthorId" selected="@(Context.Request.Query["AuthorId"] == author.AuthorId.ToString())">@author.Name</option>
+                }
+            </select>
+        </div>
+        <div class="col-md-2">
+            <select name="Availability" class="form-select">
+                <option value="All">All Availability</option>
+                <option value="Available">Available</option>
+                <option value="Unavailable">Unavailable</option>
+            </select>
+        </div>
+        <div class="col-md-2">
+            <button type="submit" class="btn btn-primary w-100">Filter</button>
+        </div>
+    </form>
+
+    <div class="row g-4">
+        @if (!Model.Any())
+        {
+            <div class="col-12"><div class="empty-state">No books match these filters.</div></div>
+        }
+        @foreach (var book in Model)
+        {
+            <div class="col-md-6 col-lg-4">
+                <div class="book-card h-100">
+                    <img src="@FileStorage.GetCoverImagePath(book.CoverImagePath)" alt="@book.Title" class="book-cover-image" />
+                    <div class="p-3">
+                        <h5 class="fw-bold">@book.Title</h5>
+                        <p class="text-muted mb-2">@book.Author?.Name</p>
+                        <p class="mb-2"><span class="badge bg-light text-dark">@book.Category?.Name</span></p>
+                        <div class="d-flex justify-content-between mb-3">
+                            <small>Availability</small>
+                            <span class="badge @(book.AvailableCopies > 0 ? "bg-success" : "bg-warning text-dark")">@(book.AvailableCopies > 0 ? "Available" : "Unavailable")</span>
+                        </div>
+                        <a asp-controller="Books" asp-action="Details" asp-route-id="@book.BookId" class="btn btn-outline-primary w-100">Details</a>
+                        @if (User.IsInRole("Admin") || User.IsInRole("Librarian"))
+                        {
+                            <div class="d-flex gap-2 mt-2">
+                                <a asp-controller="Books" asp-action="Edit" asp-route-id="@book.BookId" class="btn btn-sm btn-outline-secondary flex-fill">Edit</a>
+                                <form asp-controller="Books" asp-action="Delete" asp-route-id="@book.BookId" method="post" class="flex-fill" onsubmit="return confirm('Delete this book? Books with borrowing or reservation history cannot be deleted.');">
+                                    @Html.AntiForgeryToken()
+                                    <button type="submit" class="btn btn-sm btn-outline-danger w-100">Delete</button>
+                                </form>
+                            </div>
+                        }
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+
+    <nav class="mt-4" aria-label="Pagination">
+        <ul class="pagination justify-content-center">
+            @for (int i = 1; i <= (int)totalPages; i++)
+            {
+                <li class="page-item @(i == (int)pageNumber ? "active" : "")">
+                    <a class="page-link" asp-route-PageNumber="@i">@i</a>
+                </li>
+            }
+        </ul>
+    </nav>
+</div>

@@ -1,0 +1,18 @@
+@model DigitalLibraryManagementSystem.Models.ApplicationUser
+@{
+    ViewData["Title"] = "Member Details";
+}
+
+<div class="page-shell">
+    <div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-4">
+        <div><h2 class="section-title mb-1">@Model.FullName</h2><p class="text-muted mb-0">Member details</p></div>
+        <a asp-action="BorrowHistory" asp-route-userId="@Model.Id" class="btn btn-outline-primary">Borrow History</a>
+    </div>
+    <dl class="row">
+        <dt class="col-sm-3">Email</dt><dd class="col-sm-9">@Model.Email</dd>
+        <dt class="col-sm-3">Phone</dt><dd class="col-sm-9">@Model.PhoneNumber</dd>
+        <dt class="col-sm-3">Address</dt><dd class="col-sm-9">@Model.Address</dd>
+        <dt class="col-sm-3">Joined</dt><dd class="col-sm-9">@Model.RegistrationDate.ToShortDateString()</dd>
+        <dt class="col-sm-3">Membership</dt><dd class="col-sm-9">@(Model.IsActive ? "Active" : "Inactive")</dd>
+    </dl>
+</div>

@@ -1,0 +1,119 @@
+@model DigitalLibraryManagementSystem.Models.Book
+@inject DigitalLibraryManagementSystem.Services.FileStorageService FileStorage
+@{
+    ViewData["Title"] = Model.Title;
+    var averageRating = (double)ViewBag.AverageRating;
+    var reviewCount = (int)ViewBag.ReviewCount;
+    var coverImagePath = FileStorage.GetCoverImagePath(Model.CoverImagePath);
+    var hasDigitalFile = Model.IsDigitalAvailable && FileStorage.DigitalFileExists(Model.DigitalFilePath);
+    var safeReturnUrl = Url.Action(nameof(DigitalLibraryManagementSystem.Controllers.BooksController.Details), "Books", new { id = Model.BookId });
+}
+
+<div class="page-shell">
+    <div class="row g-5">
+        <div class="col-lg-4">
+            <img src="@coverImagePath" alt="@Model.Title" class="book-detail-cover" />
+        </div>
+        <div class="col-lg-8">
+            <h2 class="fw-bold">@Model.Title</h2>
+            <p class="text-muted">by @Model.Author?.Name</p>
+            <div class="mb-3">
+                <span class="badge bg-warning text-dark me-2">@averageRating.ToString("0.0") / 5</span>
+                <span class="badge bg-light text-dark">@reviewCount reviews</span>
+            </div>
+            <dl class="row">
+                <dt class="col-sm-4">ISBN</dt><dd class="col-sm-8">@Model.ISBN</dd>
+                <dt class="col-sm-4">Category</dt><dd class="col-sm-8">@Model.Category?.Name</dd>
+                <dt class="col-sm-4">Publisher</dt><dd class="col-sm-8">@Model.Publisher?.Name</dd>
+                <dt class="col-sm-4">Edition</dt><dd class="col-sm-8">@Model.Edition</dd>
+                <dt class="col-sm-4">Published</dt><dd class="col-sm-8">@Model.PublishedYear</dd>
+                <dt class="col-sm-4">Language</dt><dd class="col-sm-8">@Model.Language</dd>
+                <dt class="col-sm-4">Available copies</dt><dd class="col-sm-8">@Model.AvailableCopies / @Model.TotalCopies</dd>
+                <dt class="col-sm-4">Shelf</dt><dd class="col-sm-8">@Model.ShelfLocation</dd>
+            </dl>
+            <p>@Model.Description</p>
+
+            @if (User.Identity != null && User.Identity.IsAuthenticated)
+            {
+                if (Model.AvailableCopies > 0)
+                {
+                    <form asp-controller="Borrow" asp-action="BorrowBook" method="post" class="d-inline">
+                        @Html.AntiForgeryToken()
+                        <input type="hidden" name="bookId" value="@Model.BookId" />
+                        <input type="hidden" name="returnUrl" value="@Context.Request.Path" />
+                        <button type="submit" class="btn btn-primary me-2">Borrow Book</button>
+                    </form>
+                }
+                else
+                {
+                    <form asp-controller="Reservation" asp-action="ReserveBook" asp-route-bookId="@Model.BookId" asp-route-returnUrl="@safeReturnUrl" method="post" class="d-inline">
+                        @Html.AntiForgeryToken()
+                        <button type="submit" class="btn btn-warning me-2">Reserve Book</button>
+                    </form>
+                }
+
+            }
+            else
+            {
+                <a asp-controller="Account" asp-action="Login" asp-route-returnUrl="@safeReturnUrl" class="btn btn-primary">Login to borrow</a>
+            }
+            @if (hasDigitalFile)
+            {
+                <a href="@Model.DigitalFilePath" target="_blank" rel="noopener noreferrer" type="application/pdf" class="btn btn-outline-success">Read / Download Digital Book</a>
+            }
+        </div>
+    </div>
+
+    <div class="mt-5">
+        <h3>Reviews</h3>
+        @if (User.Identity != null && User.Identity.IsAuthenticated)
+        {
+            <form asp-controller="Reviews" asp-action="AddReview" method="post" class="card p-3 mb-4">
+                @Html.AntiForgeryToken()
+                <input type="hidden" name="bookId" value="@Model.BookId" />
+                <div class="row g-3 align-items-end">
+                    <div class="col-md-2">
+                        <label class="form-label">Rating</label>
+                        <select name="rating" class="form-select" required>
+                            <option value="5">5</option>
+                            <option value="4">4</option>
+                            <option value="3">3</option>
+                            <option value="2">2</option>
+                            <option value="1">1</option>
+                        </select>
+                    </div>
+                    <div class="col-md-8">
+                        <label class="form-label">Comment</label>
+                        <input type="text" name="comment" class="form-control" placeholder="Share your experience" required />
+                    </div>
+                    <div class="col-md-2">
+                        <button type="submit" class="btn btn-primary w-100">Submit</button>
+                    </div>
+                </div>
+            </form>
+        }
+
+        @if (!Model.Reviews.Any())
+        {
+            <div class="empty-state">No reviews yet.</div>
+        }
+        @foreach (var review in Model.Reviews.OrderByDescending(r => r.CreatedAt))
+        {
+            <div class="card p-3 mb-3">
+                <div class="d-flex justify-content-between">
+                    <strong>@review.User?.FullName</strong>
+                    <span class="text-warning">@review.Rating/5</span>
+                </div>
+                <p class="mb-0 mt-2">@review.Comment</p>
+                @if (User.Identity != null && User.Identity.IsAuthenticated && (User.Identity.Name == review.User?.Email || User.IsInRole("Admin")))
+                {
+                    <form asp-controller="Reviews" asp-action="DeleteReview" method="post" class="mt-2">
+                        @Html.AntiForgeryToken()
+                        <input type="hidden" name="reviewId" value="@review.ReviewId" />
+                        <button type="submit" class="btn btn-sm btn-outline-danger">Delete</button>
+                    </form>
+                }
+            </div>
+        }
+    </div>
+</div>

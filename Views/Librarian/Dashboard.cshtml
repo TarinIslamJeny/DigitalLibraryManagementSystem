@@ -1,0 +1,20 @@
+@{
+    ViewData["Title"] = "Librarian Dashboard";
+}
+
+<div class="page-shell">
+    <h2 class="section-title">Librarian Dashboard</h2>
+    <div class="row g-4 mb-4">
+        <div class="col-md-3"><div class="dashboard-card"><h6>Total Books</h6><h3>@Model.TotalBooks</h3></div></div>
+        <div class="col-md-3"><div class="dashboard-card"><h6>Currently Borrowed</h6><h3>@Model.CurrentlyBorrowed</h3></div></div>
+        <div class="col-md-3"><div class="dashboard-card"><h6>Books Due Today</h6><h3>@Model.BooksDueToday</h3></div></div>
+        <div class="col-md-3"><div class="dashboard-card"><h6>Overdue Books</h6><h3>@Model.OverdueBooks</h3></div></div>
+    </div>
+
+    <div class="row g-3">
+        <div class="col-md-3"><a asp-action="IssueBook" class="btn btn-primary w-100">Issue Book</a></div>
+        <div class="col-md-3"><a asp-action="ReturnBook" class="btn btn-primary w-100">Return Book</a></div>
+        <div class="col-md-3"><a asp-controller="Books" asp-action="Create" class="btn btn-primary w-100">Add Book</a></div>
+        <div class="col-md-3"><a asp-action="SearchMember" class="btn btn-primary w-100">Search Member</a></div>
+    </div>
+</div>

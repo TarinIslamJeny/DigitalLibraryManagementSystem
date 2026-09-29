@@ -1,0 +1,106 @@
+@model DigitalLibraryManagementSystem.ViewModels.BookFormViewModel
+@inject DigitalLibraryManagementSystem.Services.FileStorageService FileStorage
+@{
+    ViewData["Title"] = Model.BookId.HasValue ? "Edit Book" : "Create Book";
+    var hasCurrentDigitalFile = FileStorage.DigitalFileExists(Model.ExistingDigitalFilePath);
+}
+
+<div class="form-card">
+    <h2 class="mb-4 text-center">@ViewData["Title"]</h2>
+    <form asp-action="@(Model.BookId.HasValue ? "Edit" : "Create")" asp-route-id="@Model.BookId" method="post" enctype="multipart/form-data">
+        @Html.AntiForgeryToken()
+        <input type="hidden" asp-for="BookId" />
+        <div asp-validation-summary="All" class="text-danger"></div>
+
+        <div class="row g-3">
+            <div class="col-md-6">
+                <label asp-for="Title" class="form-label"></label>
+                <input asp-for="Title" class="form-control" />
+                <span asp-validation-for="Title" class="text-danger"></span>
+            </div>
+            <div class="col-md-6">
+                <label asp-for="ISBN" class="form-label"></label>
+                <input asp-for="ISBN" class="form-control" />
+                <span asp-validation-for="ISBN" class="text-danger"></span>
+            </div>
+            <div class="col-md-6">
+                <label asp-for="AuthorId" class="form-label"></label>
+                <select asp-for="AuthorId" asp-items="Model.Authors" class="form-select"></select>
+            </div>
+            <div class="col-md-6">
+                <label asp-for="CategoryId" class="form-label"></label>
+                <select asp-for="CategoryId" asp-items="Model.Categories" class="form-select"></select>
+            </div>
+            <div class="col-md-6">
+                <label asp-for="PublisherId" class="form-label"></label>
+                <select asp-for="PublisherId" asp-items="Model.Publishers" class="form-select"></select>
+            </div>
+            <div class="col-md-6">
+                <label asp-for="PublishedYear" class="form-label"></label>
+                <input asp-for="PublishedYear" class="form-control" />
+            </div>
+            <div class="col-md-4">
+                <label asp-for="Edition" class="form-label"></label>
+                <input asp-for="Edition" class="form-control" />
+            </div>
+            <div class="col-md-4">
+                <label asp-for="Language" class="form-label"></label>
+                <input asp-for="Language" class="form-control" />
+            </div>
+            <div class="col-md-4">
+                <label asp-for="TotalCopies" class="form-label"></label>
+                <input asp-for="TotalCopies" class="form-control" />
+            </div>
+            <div class="col-md-6">
+                <label asp-for="ShelfLocation" class="form-label"></label>
+                <input asp-for="ShelfLocation" class="form-control" />
+            </div>
+            <div class="col-md-6">
+                <label asp-for="CoverImage" class="form-label"></label>
+                <input asp-for="CoverImage" class="form-control" type="file" accept=".jpg,.jpeg,.png,.webp,image/jpeg,image/png,image/webp" />
+                <span asp-validation-for="CoverImage" class="text-danger"></span>
+                <div class="media-preview mt-3">
+                    <img src="@FileStorage.GetCoverImagePath(Model.ExistingCoverImagePath)" alt="Current cover for @Model.Title" class="media-preview-cover" />
+                    <span class="small text-muted">Current cover preview. JPG, PNG, or WebP, up to 5 MB.</span>
+                </div>
+            </div>
+            <div class="col-12">
+                <label asp-for="Description" class="form-label"></label>
+                <textarea asp-for="Description" class="form-control" rows="4"></textarea>
+            </div>
+            <div class="col-12">
+                <label asp-for="DigitalFile" class="form-label"></label>
+                <input asp-for="DigitalFile" class="form-control" type="file" accept=".pdf,application/pdf" />
+                <span asp-validation-for="DigitalFile" class="text-danger"></span>
+                <div class="form-text">PDF only, up to 50 MB.</div>
+                <div class="media-file-status mt-2">
+                    @if (hasCurrentDigitalFile)
+                    {
+                        <span class="badge text-bg-success">Digital PDF available</span>
+                        <a href="@Model.ExistingDigitalFilePath" target="_blank" rel="noopener noreferrer">Open current PDF</a>
+                    }
+                    else
+                    {
+                        <span class="badge text-bg-secondary">No digital PDF available</span>
+                    }
+                </div>
+                @if (hasCurrentDigitalFile)
+                {
+                    <div class="form-check mt-2">
+                        <input asp-for="RemoveDigitalFile" class="form-check-input" />
+                        <label asp-for="RemoveDigitalFile" class="form-check-label"></label>
+                    </div>
+                }
+            </div>
+        </div>
+
+        <div class="mt-4 d-flex gap-2">
+            <button type="submit" class="btn btn-primary">Save</button>
+            <a asp-action="Index" class="btn btn-secondary">Cancel</a>
+        </div>
+    </form>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

@@ -1,0 +1,56 @@
+@using DigitalLibraryManagementSystem.Models
+@{
+    ViewData["Title"] = "Borrowing Reports";
+    var records = ViewBag.Records as IEnumerable<BorrowRecord> ?? Enumerable.Empty<BorrowRecord>();
+}
+
+<div class="page-shell">
+    <h2 class="section-title">Borrowing Reports</h2>
+    <form asp-action="Index" method="get" class="row g-3 mb-4">
+        <div class="col-sm-6 col-lg-2">
+            <label for="startDate" class="form-label">From</label>
+            <input id="startDate" name="startDate" type="date" class="form-control" value="@Context.Request.Query["startDate"]" />
+        </div>
+        <div class="col-sm-6 col-lg-2">
+            <label for="endDate" class="form-label">To</label>
+            <input id="endDate" name="endDate" type="date" class="form-control" value="@Context.Request.Query["endDate"]" />
+        </div>
+        <div class="col-sm-6 col-lg-3">
+            <label for="member" class="form-label">Member</label>
+            <input id="member" name="member" class="form-control" value="@Context.Request.Query["member"]" />
+        </div>
+        <div class="col-sm-6 col-lg-3">
+            <label for="book" class="form-label">Book</label>
+            <input id="book" name="book" class="form-control" value="@Context.Request.Query["book"]" />
+        </div>
+        <div class="col-lg-2 d-flex align-items-end">
+            <button type="submit" class="btn btn-primary w-100">Filter</button>
+        </div>
+    </form>
+
+    <div class="table-responsive">
+        @if (!records.Any())
+        {
+            <div class="empty-state">No borrowing records match these filters.</div>
+        }
+        else
+        {
+            <table class="table table-striped align-middle">
+                <thead><tr><th>Member</th><th>Book</th><th>Borrowed</th><th>Due</th><th>Returned</th><th>Status</th></tr></thead>
+                <tbody>
+                    @foreach (var record in records)
+                    {
+                        <tr>
+                            <td>@record.User?.FullName</td>
+                            <td>@record.Book?.Title</td>
+                            <td>@record.BorrowDate.ToShortDateString()</td>
+                            <td>@record.DueDate.ToShortDateString()</td>
+                            <td>@(record.ReturnDate?.ToShortDateString() ?? "-")</td>
+                            <td><span class="badge @(record.Status == BorrowStatus.Returned ? "text-bg-success" : record.Status == BorrowStatus.Overdue ? "text-bg-danger" : "text-bg-primary")">@record.Status</span></td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        }
+    </div>
+</div>

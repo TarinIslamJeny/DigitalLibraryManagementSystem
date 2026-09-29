@@ -1,0 +1,33 @@
+@model IEnumerable<DigitalLibraryManagementSystem.Models.ApplicationUser>
+@{
+    ViewData["Title"] = "Search Members";
+}
+
+<div class="page-shell">
+    <h2 class="section-title">Search Members</h2>
+    <form asp-action="SearchMember" method="get" class="row g-2 mb-4">
+        <div class="col-sm-9 col-lg-10">
+            <label for="query" class="visually-hidden">Member name or email</label>
+            <input id="query" name="query" class="form-control" value="@Context.Request.Query["query"]" placeholder="Member name or email" />
+        </div>
+        <div class="col-sm-3 col-lg-2"><button type="submit" class="btn btn-primary w-100">Search</button></div>
+    </form>
+    @if (!Model.Any())
+    {
+        <div class="empty-state">No matching members found.</div>
+    }
+    else
+    {
+        <div class="table-responsive">
+            <table class="table table-striped align-middle">
+                <thead><tr><th>Name</th><th>Email</th><th>Phone</th><th>Status</th></tr></thead>
+                <tbody>
+                    @foreach (var member in Model)
+                    {
+                        <tr><td>@member.FullName</td><td>@member.Email</td><td>@member.PhoneNumber</td><td><span class="badge @(member.IsActive ? "text-bg-success" : "text-bg-secondary")">@(member.IsActive ? "Active" : "Inactive")</span></td></tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    }
+</div>
